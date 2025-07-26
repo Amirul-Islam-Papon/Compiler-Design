@@ -1,13 +1,12 @@
-/* Testing all types of tokens */
+/*Multi line commment
+2nd line
+*/
 
-int max = 100;
-float pi = 3.1416;
-char symbol = 'X';
-if (max >= 10 && pi <= 4.0) {
-    max = max - 1;
-}
-
-// Loop
-while (max > 0) {
-    max = max / 2;
+void main()
+{
+int a, b, c;
+//comment
+int a = b*c + 10;
+if(a!=2)
+a = 0;
 }

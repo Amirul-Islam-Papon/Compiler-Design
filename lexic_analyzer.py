@@ -1,7 +1,11 @@
 import re
 
-# List of keywords
-keywords = {'if', 'else', 'int', 'float', 'char', 'void', 'main'}
+# Keyword list (C language)
+keywords = {
+    'if', 'else', 'int', 'float', 'char', 'void', 'return',
+    'while', 'for', 'do', 'break', 'continue', 'switch', 'case',
+    'default', 'struct', 'typedef', 'union', 'static', 'const'
+}
 
 # Token categories
 tokens = {
@@ -14,32 +18,50 @@ tokens = {
     'Parenthesis': set()
 }
 
-# Regex patterns
+# Regular expression patterns
 patterns = {
     'comment_multiline': re.compile(r'/\*.*?\*/', re.DOTALL),
     'comment_single': re.compile(r'//.*'),
-    'logical_operator': re.compile(r'(>=|<=|==|!=|>|<)'),
+    'logical_operator': re.compile(r'(>=|<=|==|!=|&&|\|\||!|>|<)'),
     'arithmetic_operator': re.compile(r'[\+\-\*/=]'),
     'punctuation': re.compile(r'[;:,]'),
     'parenthesis': re.compile(r'[()\[\]{}]'),
-    'constant': re.compile(r"\b\d+(\.\d+)?\b|'.'"),
+    'constant': re.compile(r"\b\d+(?:\.\d+)?\b|'.'"),  
     'identifier': re.compile(r'\b[a-zA-Z_]\w*\b')
 }
 
+#Remove comments, unnecessary whitespace and newlines
 def remove_comments(code):
     code = re.sub(patterns['comment_multiline'], '', code)
     code = re.sub(patterns['comment_single'], '', code)
     return code
 
+def remove_whitespace(code):
+    return re.sub(r'\s+', ' ', code).strip()
+
+def remove_extra_newlines(code):
+    return re.sub(r'\n+', '\n', code).strip()
+
+# Token classification logic
 def classify(code):
     code = remove_comments(code)
+    code = remove_whitespace(code)
+    code = remove_extra_newlines(code)
 
-    # Extract tokens
+    # Extract and store constants first
+    constants = patterns['constant'].findall(code)
+    tokens['Constant'].update(constants)
+
+    # Remove constants from code to prevent misclassification
+    for c in constants:
+        value = c[0] if isinstance(c, tuple) else c
+        code = code.replace(value, ' ')  
+
+    # Extract other tokens
     tokens['Logical Operator'].update(patterns['logical_operator'].findall(code))
     tokens['Arithmetic Operator'].update(patterns['arithmetic_operator'].findall(code))
     tokens['Punctuation'].update(patterns['punctuation'].findall(code))
     tokens['Parenthesis'].update(patterns['parenthesis'].findall(code))
-    tokens['Constant'].update(patterns['constant'].findall(code))
 
     all_identifiers = patterns['identifier'].findall(code)
 
@@ -49,21 +71,21 @@ def classify(code):
         else:
             tokens['Identifier'].add(word)
 
+# Output display
 def display_output():
     for category, items in tokens.items():
-        formatted_items = ', '.join(sorted(set(str(i[0] if isinstance(i, tuple) else i) for i in items)))
+        formatted_items = ', '.join(sorted(
+            str(i[0] if isinstance(i, tuple) else i) for i in items
+        ))
         print(f"{category} ({len(items)}): {formatted_items}")
 
-# ====================
-# MAIN EXECUTION BLOCK
-# ====================
 
-# Option 1: Read from console
-
-
-# Option 2: Read from file (uncomment to use file)
-with open('input.c', 'r') as f:
-     source_code = f.read()
-
-classify(source_code)
-display_output()
+# Main Execution
+if __name__ == "__main__":
+    try:
+        with open('input.c', 'r') as f:
+            source_code = f.read()
+        classify(source_code)
+        display_output()
+    except FileNotFoundError:
+        print("Error: 'input.c' file not found.")
