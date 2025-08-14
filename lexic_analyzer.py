@@ -37,10 +37,10 @@ def remove_comments(code):
     return code
 
 def remove_whitespace(code):
-    return re.sub(r'\s+', ' ', code).strip()
+    return re.sub(r'\s+', ' ', code)
 
 def remove_extra_newlines(code):
-    return re.sub(r'\n+', '\n', code).strip()
+    return re.sub(r'\n+', '\n', code)
 
 # Token classification logic
 def classify(code):
